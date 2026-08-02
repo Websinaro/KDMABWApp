@@ -33,6 +33,7 @@ class AppColors {
   static const Color alertOrange = Color(0xFFFF9F45);
   static const Color alertLightRed = Color(0xFFF1554C);
   static const Color alertDarkRed = Color(0xFF8B1A1A);
+  static const Color alertRed = alertLightRed;
 
   static Color alertColor(String level) {
     switch (level.toLowerCase()) {
