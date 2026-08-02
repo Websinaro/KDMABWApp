@@ -12,8 +12,6 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
-  
-  cryptography: ^2.7.0
 
   # Networking
   http: ^1.2.2
@@ -41,6 +39,9 @@ dependencies:
 
   # Date / time formatting for forecasts
   intl: ^0.19.0
+
+  # AES-GCM encryption/decryption of API payloads
+  cryptography: ^2.7.0
 
 dev_dependencies:
   flutter_test:

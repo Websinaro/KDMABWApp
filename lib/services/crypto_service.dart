@@ -2,12 +2,16 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:cryptography/cryptography.dart';
 
+/// Handles AES-256-GCM encryption/decryption of API payloads.
+///
+/// The key here MUST be the exact same base64 string as AES_SECRET_KEY
+/// in the backend's .env file. Generate one with:
+///   openssl rand -base64 32
 class CryptoService {
   CryptoService._internal();
   static final CryptoService instance = CryptoService._internal();
 
-  // Must be the EXACT same base64 key as the backend's AES_SECRET_KEY
-  static const String _base64Key = 'KQ7eZ9waT3sSW69aNLqXkGW1yoTdhueVnX+W3dP5coE=';
+  static const String _base64Key = 'PASTE_SAME_KEY_AS_BACKEND_HERE';
 
   final _algorithm = AesGcm.with256bits();
 
@@ -20,7 +24,11 @@ class CryptoService {
     final nonce = _algorithm.newNonce();
     final plaintext = utf8.encode(jsonEncode(data));
 
-    final secretBox = await _algorithm.encrypt(plaintext, secretKey: key, nonce: nonce);
+    final secretBox = await _algorithm.encrypt(
+      plaintext,
+      secretKey: key,
+      nonce: nonce,
+    );
 
     final combined = Uint8List.fromList(
       secretBox.nonce + secretBox.cipherText + secretBox.mac.bytes,
