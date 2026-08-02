@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- WeBAlert launch splash: pure black background (AMOLED battery-saving) -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/webalert_black" />
+</layer-list>

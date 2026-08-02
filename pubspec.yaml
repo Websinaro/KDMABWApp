@@ -1,0 +1,49 @@
+name: webalert
+description: "WeBAlert - Kerala Disaster Management App. Live weather, disaster alert levels and district-wise monitoring."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # Networking
+  http: ^1.2.2
+
+  # State management (lightweight, no heavy rebuilds -> keeps UI smooth)
+  provider: ^6.1.2
+
+  # Local device storage (profile cache, weather cache, settings, offline backup)
+  shared_preferences: ^2.3.3
+
+  # Secure storage for the auth token (Android Keystore backed)
+  flutter_secure_storage: ^9.2.2
+
+  # GPS location for local weather
+  geolocator: ^13.0.2
+
+  # Runtime permission handling (location + storage)
+  permission_handler: ^11.3.1
+
+  # Access to app-specific + public external storage directories (backup export)
+  path_provider: ^2.1.5
+
+  # Detect internet connectivity before hitting the API
+  connectivity_plus: ^6.1.0
+
+  # Date / time formatting for forecasts
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
