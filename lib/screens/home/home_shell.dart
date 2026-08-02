@@ -3,10 +3,10 @@ import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
 import '../../theme/app_colors.dart';
+import '../map/kerala_map_screen.dart';
 import '../profile/profile_screen.dart';
 import 'districts_screen.dart';
 import 'weather_dashboard_screen.dart';
-
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
 
