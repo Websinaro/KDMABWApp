@@ -68,22 +68,23 @@ class ApiService {
 }
 
   Future<String> login({required String email, required String password}) async {
-    final res = await _send(() => _client.post(
-          Uri.parse('$baseUrl/login'),
-          headers: const {'Content-Type': 'application/x-www-form-urlencoded'},
-          body: {'email': email.trim(), 'password': password},
-        ));
+  final res = await _send(() => _client.post(
+        Uri.parse('$baseUrl/login'),
+        headers: const {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {'email': email.trim(), 'password': password},
+      ));
 
-    if (res.statusCode == 200) {
-      final data = jsonDecode(res.body) as Map<String, dynamic>;
-      final token = data['access_token']?.toString();
-      if (token == null || token.isEmpty) {
-        throw ApiException('Login succeeded but no session token was returned.');
-      }
-      return token;
+  if (res.statusCode == 200) {
+    final wrapper = jsonDecode(res.body) as Map<String, dynamic>;
+    final decrypted = await CryptoService.instance.decryptPayload(wrapper['data'] as String);
+    final token = decrypted['access_token']?.toString();
+    if (token == null || token.isEmpty) {
+      throw ApiException('Login succeeded but no session token was returned.');
     }
-    throw ApiException(_extractError(res));
+    return token;
   }
+  throw ApiException(_extractError(res));
+}
 
   Future<AppUser> fetchMe(String token) async {
   final res = await _send(() => _client.get(
