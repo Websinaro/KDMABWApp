@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services/local_cache.dart';
 import '../../services/location_service.dart';
 import '../../theme/app_colors.dart';
+import '../../utils/page_transitions.dart';
 import '../../widgets/primary_button.dart';
 import '../auth/welcome_screen.dart';
 
@@ -38,7 +39,7 @@ class _PermissionScreenState extends State<PermissionScreen> {
     await LocalCache.instance.setOnboardingDone();
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+      fadeScaleRoute(const WelcomeScreen()),
     );
   }
 

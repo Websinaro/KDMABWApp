@@ -7,7 +7,7 @@ import '../../widgets/alert_banner.dart';
 import '../../widgets/daily_forecast_list.dart';
 import '../../widgets/detail_grid.dart';
 import '../../widgets/hourly_forecast_strip.dart';
-import '../../widgets/weather_icon.dart';
+import '../../widgets/weather_animation.dart';
 
 /// The Google-Weather-style presentation of a [WeatherResponse]: a large
 /// gradient header with current conditions, an hourly trend strip, a 7-day
@@ -32,7 +32,6 @@ class WeatherDetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final current = weather.current;
-    final iconData = weatherIconFor(current.weatherIcon, isDay: current.isDaytime);
     final gradient = AppColors.weatherGradient(icon: current.weatherIcon, isDay: current.isDaytime);
     final updated = DateFormat('h:mm a').format(weather.fetchedAt);
 
@@ -81,12 +80,17 @@ class WeatherDetailView extends StatelessWidget {
                       '${current.temperature.round()}°',
                       style: const TextStyle(fontSize: 68, fontWeight: FontWeight.w300, height: 1),
                     ),
-                    const SizedBox(width: 12),
+                    const Spacer(),
                     Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Icon(iconData.icon, color: iconData.color, size: 30),
-                        const SizedBox(height: 4),
+                        WeatherAnimatedIcon(
+                          key: ValueKey('${current.weatherIcon}-${current.isDaytime}'),
+                          iconKey: current.weatherIcon,
+                          isDay: current.isDaytime,
+                          size: 76,
+                        ),
+                        const SizedBox(height: 2),
                         Text(current.weatherLabel, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                       ],
                     ),

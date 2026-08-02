@@ -5,6 +5,7 @@ import '../../models/weather_models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/weather_provider.dart';
 import '../../theme/app_colors.dart';
+import '../../utils/page_transitions.dart';
 import '../../utils/districts.dart';
 import '../../widgets/district_alert_card.dart';
 import '../../widgets/error_retry_view.dart';
@@ -76,27 +77,41 @@ class _CitizenWeatherBody extends StatelessWidget {
     final provider = context.watch<WeatherProvider>();
     final weather = provider.weather;
 
-    if (provider.state == WeatherLoadState.loading && weather == null) {
-      return const _LoadingBody();
-    }
+    Widget child;
+    String stateKey;
 
-    if (provider.state == WeatherLoadState.error && weather == null) {
+    if (provider.state == WeatherLoadState.loading && weather == null) {
+      child = const _LoadingBody();
+      stateKey = 'loading';
+    } else if (provider.state == WeatherLoadState.error && weather == null) {
       final isPermission = (provider.errorMessage ?? '').toLowerCase().contains('permission');
-      return ErrorRetryView(
+      child = ErrorRetryView(
         icon: isPermission ? Icons.location_off_rounded : Icons.cloud_off_rounded,
         message: provider.errorMessage ?? 'Could not load weather. Pull down to retry.',
         onRetry: () => provider.loadFromDeviceLocation(),
       );
+      stateKey = 'error';
+    } else if (weather == null) {
+      child = const _LoadingBody();
+      stateKey = 'loading';
+    } else {
+      child = WeatherDetailView(
+        weather: weather,
+        locationLabel: provider.activeLocationLabel ?? weather.locationName ?? 'Your Location',
+        subLabel: 'Live GPS location',
+        usingCache: provider.usingCache,
+        onRefresh: () => provider.loadFromDeviceLocation(),
+      );
+      stateKey = 'data';
     }
 
-    if (weather == null) return const _LoadingBody();
-
-    return WeatherDetailView(
-      weather: weather,
-      locationLabel: provider.activeLocationLabel ?? weather.locationName ?? 'Your Location',
-      subLabel: 'Live GPS location',
-      usingCache: provider.usingCache,
-      onRefresh: () => provider.loadFromDeviceLocation(),
+    // A quick cross-fade between loading / error / data states feels far
+    // smoother than the previous instant swap.
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 260),
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeIn,
+      child: KeyedSubtree(key: ValueKey(stateKey), child: child),
     );
   }
 }
@@ -188,7 +203,7 @@ class _PresidentOverviewBody extends StatelessWidget {
                   label: d.label,
                   weather: w,
                   onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => WeatherDetailScreen(districtKey: d.key)),
+                    fadeScaleRoute(WeatherDetailScreen(districtKey: d.key)),
                   ),
                 );
               },

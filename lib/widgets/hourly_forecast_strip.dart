@@ -40,13 +40,15 @@ class HourlyForecastStrip extends StatelessWidget {
                 left: 0,
                 right: 0,
                 height: 54,
-                child: CustomPaint(
-                  painter: _TempTrendPainter(
-                    temps: temps,
-                    minT: minT,
-                    maxT: maxT,
-                    itemWidth: itemWidth,
-                    color: AppColors.primary,
+                child: RepaintBoundary(
+                  child: CustomPaint(
+                    painter: _TempTrendPainter(
+                      temps: temps,
+                      minT: minT,
+                      maxT: maxT,
+                      itemWidth: itemWidth,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ),
               ),

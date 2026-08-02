@@ -30,6 +30,9 @@ class _HomeShellState extends State<HomeShell> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      // IndexedStack keeps every tab's state alive (scroll position, loaded
+      // data) and switches between them with zero rebuild cost - the
+      // fastest possible tab switch, so it's kept as-is on purpose.
       body: IndexedStack(index: _index, children: pages),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _index,

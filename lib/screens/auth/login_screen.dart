@@ -5,6 +5,7 @@ import '../../providers/auth_provider.dart';
 import '../../services/api_service.dart';
 import '../../services/local_cache.dart';
 import '../../theme/app_colors.dart';
+import '../../utils/page_transitions.dart';
 import '../../utils/validators.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/primary_button.dart';
@@ -65,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const HomeShell()),
+        fadeScaleRoute(const HomeShell()),
         (route) => false,
       );
     } on ApiException catch (e) {
@@ -185,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const Text("Don't have an account?", style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
                   TextButton(
                     onPressed: () => Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (_) => const SignupScreen()),
+                      fadeScaleRoute(const SignupScreen()),
                     ),
                     child: const Text('Sign Up'),
                   ),

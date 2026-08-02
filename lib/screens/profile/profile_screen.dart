@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
 import '../../theme/app_colors.dart';
+import '../../utils/page_transitions.dart';
 import '../../utils/districts.dart';
 import '../auth/welcome_screen.dart';
 import 'backup_screen.dart';
@@ -31,7 +32,7 @@ class ProfileScreen extends StatelessWidget {
       await context.read<AuthProvider>().logout();
       if (context.mounted) {
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+          fadeScaleRoute(const WelcomeScreen()),
           (route) => false,
         );
       }
@@ -126,7 +127,7 @@ class ProfileScreen extends StatelessWidget {
             title: 'Backup & Restore',
             subtitle: 'Save your data to device storage, on or off the app',
             onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const BackupScreen()),
+              fadeScaleRoute(const BackupScreen()),
             ),
           ),
           const SizedBox(height: 10),

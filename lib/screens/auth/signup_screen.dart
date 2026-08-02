@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/api_service.dart';
 import '../../theme/app_colors.dart';
+import '../../utils/page_transitions.dart';
 import '../../utils/validators.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/district_picker_field.dart';
@@ -66,7 +67,7 @@ class _SignupScreenState extends State<SignupScreen> {
         SnackBar(content: Text('Account created for ${_email.text.trim()}. Please log in.')),
       );
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => LoginScreen(prefilledEmail: _email.text.trim())),
+        fadeScaleRoute(LoginScreen(prefilledEmail: _email.text.trim())),
       );
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -187,7 +188,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   const Text('Already have an account?', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
                   TextButton(
                     onPressed: () => Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      fadeScaleRoute(const LoginScreen()),
                     ),
                     child: const Text('Log In'),
                   ),

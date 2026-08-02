@@ -164,9 +164,13 @@ class AppTheme {
         color: AppColors.primary,
       ),
       dividerTheme: const DividerThemeData(color: AppColors.divider, thickness: 1),
+      // ZoomPageTransitionsBuilder is Material 3's default: it's a cheap
+      // fade+scale composite (no full-screen slide dragging the previous
+      // page along), which renders noticeably smoother and faster than the
+      // old fade-upwards transition, especially on low/mid-range phones.
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
-          TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+          TargetPlatform.android: ZoomPageTransitionsBuilder(allowSnapshotting: true),
           TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
         },
       ),

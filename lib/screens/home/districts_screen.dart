@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../services/api_service.dart';
 import '../../services/local_cache.dart';
 import '../../theme/app_colors.dart';
+import '../../utils/page_transitions.dart';
 import '../../utils/districts.dart';
 import '../../widgets/district_alert_card.dart';
 import 'weather_detail_screen.dart';
@@ -97,7 +98,7 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
                     weather: _weatherByDistrict[d.key],
                     isHome: d.key == myDistrict,
                     onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => WeatherDetailScreen(districtKey: d.key)),
+                      fadeScaleRoute(WeatherDetailScreen(districtKey: d.key)),
                     ),
                   );
                 },
