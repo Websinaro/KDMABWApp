@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 
 import '../models/app_user.dart';
 import '../models/weather_models.dart';
+import '../services/crypto_service.dart';
 
 class ApiException implements Exception {
   final String message;
@@ -32,35 +33,39 @@ class ApiService {
   final http.Client _client = http.Client();
 
   Future<AppUser> register({
-    required String name,
-    required String email,
-    required String phone,
-    required String password,
-    required String district,
-    String? accessCode,
-  }) async {
-    final body = <String, dynamic>{
-      'name': name.trim(),
-      'email': email.trim(),
-      'phone': phone.trim(),
-      'password': password,
-      'district': district,
-    };
-    if (accessCode != null && accessCode.trim().isNotEmpty) {
-      body['access_code'] = accessCode.trim();
-    }
-
-    final res = await _send(() => _client.post(
-          Uri.parse('$baseUrl/register'),
-          headers: const {'Content-Type': 'application/json'},
-          body: jsonEncode(body),
-        ));
-
-    if (res.statusCode == 200 || res.statusCode == 201) {
-      return AppUser.fromJson(jsonDecode(res.body) as Map<String, dynamic>);
-    }
-    throw ApiException(_extractError(res));
+  required String name,
+  required String email,
+  required String phone,
+  required String password,
+  required String district,
+  String? accessCode,
+}) async {
+  final body = <String, dynamic>{
+    'name': name.trim(),
+    'email': email.trim(),
+    'phone': phone.trim(),
+    'password': password,
+    'district': district,
+  };
+  if (accessCode != null && accessCode.trim().isNotEmpty) {
+    body['access_code'] = accessCode.trim();
   }
+
+  final encrypted = await CryptoService.instance.encryptPayload(body);
+
+  final res = await _send(() => _client.post(
+        Uri.parse('$baseUrl/register'),
+        headers: const {'Content-Type': 'application/json'},
+        body: jsonEncode({'data': encrypted}),
+      ));
+
+  if (res.statusCode == 200 || res.statusCode == 201) {
+    final wrapper = jsonDecode(res.body) as Map<String, dynamic>;
+    final decrypted = await CryptoService.instance.decryptPayload(wrapper['data'] as String);
+    return AppUser.fromJson(decrypted);
+  }
+  throw ApiException(_extractError(res));
+}
 
   Future<String> login({required String email, required String password}) async {
     final res = await _send(() => _client.post(
@@ -81,32 +86,33 @@ class ApiService {
   }
 
   Future<AppUser> fetchMe(String token) async {
-    final res = await _send(() => _client.get(
-          Uri.parse('$baseUrl/me'),
-          headers: {'Authorization': 'Bearer $token'},
-        ));
+  final res = await _send(() => _client.get(
+        Uri.parse('$baseUrl/me'),
+        headers: {'Authorization': 'Bearer $token'},
+      ));
 
-    if (res.statusCode == 200) {
-      return AppUser.fromJson(jsonDecode(res.body) as Map<String, dynamic>);
-    }
-    throw ApiException(_extractError(res));
+  if (res.statusCode == 200) {
+    final wrapper = jsonDecode(res.body) as Map<String, dynamic>;
+    final decrypted = await CryptoService.instance.decryptPayload(wrapper['data'] as String);
+    return AppUser.fromJson(decrypted);
   }
+  throw ApiException(_extractError(res));
+}
 
-  Future<WeatherResponse> fetchWeather({
-    required double lat,
-    required double lon,
-  }) async {
-    final uri = Uri.parse('$baseUrl/weather').replace(queryParameters: {
-      'lat': lat.toString(),
-      'lon': lon.toString(),
-    });
-    final res = await _send(() => _client.get(uri));
+  Future<WeatherResponse> fetchWeather({required double lat, required double lon}) async {
+  final uri = Uri.parse('$baseUrl/weather').replace(queryParameters: {
+    'lat': lat.toString(),
+    'lon': lon.toString(),
+  });
+  final res = await _send(() => _client.get(uri));
 
-    if (res.statusCode == 200) {
-      return WeatherResponse.fromJson(jsonDecode(res.body) as Map<String, dynamic>);
-    }
-    throw ApiException(_extractError(res));
+  if (res.statusCode == 200) {
+    final wrapper = jsonDecode(res.body) as Map<String, dynamic>;
+    final decrypted = await CryptoService.instance.decryptPayload(wrapper['data'] as String);
+    return WeatherResponse.fromJson(decrypted);
   }
+  throw ApiException(_extractError(res));
+}
 
   Future<http.Response> _send(Future<http.Response> Function() call) async {
     try {
