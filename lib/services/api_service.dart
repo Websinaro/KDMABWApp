@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import '../models/app_user.dart';
 import '../models/weather_models.dart';
 import 'crypto_service.dart';
+import '../models/kerala_map_models.dart';
 
 class ApiException implements Exception {
   final String message;
@@ -99,6 +100,16 @@ class ApiService {
     if (res.statusCode == 200) {
       final decrypted = await _decryptResponse(res);
       return AppUser.fromJson(decrypted);
+    }
+    throw ApiException(_extractError(res));
+  }
+  
+  Future<KeralaMapResponse> fetchKeralaMap() async {
+    final res = await _send(() => _client.get(Uri.parse('$baseUrl/weather/kerala-map')));
+
+    if (res.statusCode == 200) {
+      final decrypted = await _decryptResponse(res);
+      return KeralaMapResponse.fromJson(decrypted);
     }
     throw ApiException(_extractError(res));
   }

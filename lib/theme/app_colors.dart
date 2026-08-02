@@ -27,16 +27,20 @@ class AppColors {
   static const Color textSecondary = Color(0xFF98A2AF);
   static const Color textMuted = Color(0xFF5C6572);
 
-  // Semantic disaster alert levels (mirrors backend data/severity.py)
+ // Semantic disaster alert levels (mirrors backend data/severity.py)
   static const Color alertGreen = Color(0xFF34D399);
   static const Color alertYellow = Color(0xFFF4CD46);
   static const Color alertOrange = Color(0xFFFF9F45);
-  static const Color alertRed = Color(0xFFF1554C);
+  static const Color alertLightRed = Color(0xFFF1554C);
+  static const Color alertDarkRed = Color(0xFF8B1A1A);
 
   static Color alertColor(String level) {
     switch (level.toLowerCase()) {
-      case 'red':
-        return alertRed;
+      case 'dark_red':
+        return alertDarkRed;
+      case 'light_red':
+      case 'red': // backward-compat for old 4-tier responses
+        return alertLightRed;
       case 'orange':
         return alertOrange;
       case 'yellow':
@@ -49,18 +53,21 @@ class AppColors {
 
   static String alertLabel(String level) {
     switch (level.toLowerCase()) {
+      case 'dark_red':
+        return 'Very High Risk';
+      case 'light_red':
       case 'red':
-        return 'Severe Alert';
+        return 'High Risk';
       case 'orange':
-        return 'Warning';
+        return 'Risk';
       case 'yellow':
-        return 'Watch';
+        return 'Low Risk';
       case 'green':
       default:
-        return 'All Clear';
+        return 'Safe';
     }
   }
-
+  
   /// A subtle gradient behind the current-conditions header, derived from
   /// the weather condition + whether it's day or night. Kept dark/desaturated
   /// on purpose so it stays battery-friendly and consistent with the

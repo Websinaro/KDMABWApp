@@ -25,6 +25,7 @@ class _HomeShellState extends State<HomeShell> {
     final pages = [
       const WeatherDashboardScreen(),
       const DistrictsScreen(),
+      const KeralaMapScreen(),
       const ProfileScreen(),
     ];
 
@@ -49,6 +50,11 @@ class _HomeShellState extends State<HomeShell> {
             activeIcon: Icon(Icons.map_rounded),
             label: 'Districts',
           ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.public_outlined),
+  activeIcon: Icon(Icons.public_rounded),
+  label: 'Map',
+),
           const BottomNavigationBarItem(
             icon: Icon(Icons.person_outline_rounded),
             activeIcon: Icon(Icons.person_rounded),
