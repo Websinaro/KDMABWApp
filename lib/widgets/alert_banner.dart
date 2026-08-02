@@ -53,7 +53,10 @@ class AlertBanner extends StatelessWidget {
 
   String _description(String level) {
     switch (level.toLowerCase()) {
-      case 'red':
+      case 'dark_red':
+        return 'Extreme conditions expected. This is a severe, potentially life-threatening situation — follow official Kerala Disaster Management advisories immediately and avoid all non-essential travel.';
+      case 'light_red':
+      case 'red': // backward-compat for any old 4-tier data still cached
         return 'Severe conditions expected. Follow official Kerala Disaster Management advisories and avoid unnecessary travel.';
       case 'orange':
         return 'Heightened risk of heavy rain / strong winds. Stay alert and keep emergency contacts handy.';
