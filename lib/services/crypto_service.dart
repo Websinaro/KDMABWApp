@@ -11,7 +11,7 @@ class CryptoService {
   CryptoService._internal();
   static final CryptoService instance = CryptoService._internal();
 
-  static const String _base64Key = 'PASTE_SAME_KEY_AS_BACKEND_HERE';
+  static const String _base64Key = 'KQ7eZ9waT3sSW69aNLqXkGW1yoTdhueVnX+W3dP5coE=';
 
   final _algorithm = AesGcm.with256bits();
 
