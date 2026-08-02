@@ -2,4 +2,5 @@
 <resources>
     <color name="webalert_black">#FF000000</color>
     <color name="webalert_cyan">#FF29D9EA</color>
+    <color name="ic_launcher_background">#FFFFFF</color>    
 </resources>
