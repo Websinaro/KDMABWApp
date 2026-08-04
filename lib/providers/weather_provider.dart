@@ -158,13 +158,20 @@ class WeatherProvider extends ChangeNotifier {
     loadingOverview = true;
     notifyListeners();
 
-    await Future.wait(kKeralaDistricts.map((d) async {
-      try {
-        final result = await _api.fetchWeather(lat: d.lat, lon: d.lon);
-        districtWeather[d.key] = result;
-        await LocalCache.instance.saveWeather(d.key, result);
-      } catch (_) {}
-    }));
+    // Firing all districts at once used to hammer the backend/Open-Meteo
+    // simultaneously and made every request in the burst fail together.
+    // Cap how many are in flight at once, matching the backend's own limit.
+    const maxConcurrent = 4;
+    for (var i = 0; i < kKeralaDistricts.length; i += maxConcurrent) {
+      final batch = kKeralaDistricts.skip(i).take(maxConcurrent);
+      await Future.wait(batch.map((d) async {
+        try {
+          final result = await _api.fetchWeather(lat: d.lat, lon: d.lon);
+          districtWeather[d.key] = result;
+          await LocalCache.instance.saveWeather(d.key, result);
+        } catch (_) {}
+      }));
+    }
 
     loadingOverview = false;
     notifyListeners();
