@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../models/app_user.dart';
 import '../services/api_service.dart';
 import '../services/auth_storage.dart';
+import '../services/connectivity_service.dart';
 import '../services/local_cache.dart';
 
 enum AuthStatus { unknown, authenticating, authenticated, unauthenticated }
@@ -15,10 +16,10 @@ class AuthProvider extends ChangeNotifier {
 
   final ApiService _api = ApiService.instance;
 
-  /// Called once at app startup: checks for a stored token and tries to
-  /// validate it against the backend. Falls back to the last cached
-  /// profile if the device is offline, so a returning user with no
-  /// signal isn't logged out unnecessarily.
+  /// Called at startup AND whenever the app needs to re-validate the
+  /// session. Never trusts the cache unless the device is genuinely
+  /// offline - a rejected/expired token while online always forces a
+  /// fresh login instead of silently reusing a stale cached profile.
   Future<void> restoreSession() async {
     final token = await AuthStorage.instance.readToken();
     if (token == null || token.isEmpty) {
@@ -27,6 +28,24 @@ class AuthProvider extends ChangeNotifier {
       return;
     }
 
+    final online = await ConnectivityService.instance.hasConnection();
+
+    if (!online) {
+      // Truly offline - never contact the server, just use whatever we
+      // last cached for this account.
+      final cachedUser = await LocalCache.instance.readUser();
+      if (cachedUser != null) {
+        currentUser = cachedUser;
+        isOfflineSession = true;
+        status = AuthStatus.authenticated;
+      } else {
+        status = AuthStatus.unauthenticated;
+      }
+      notifyListeners();
+      return;
+    }
+
+    // Online: always re-validate against the server.
     try {
       final user = await _api.fetchMe(token);
       currentUser = user;
@@ -34,16 +53,25 @@ class AuthProvider extends ChangeNotifier {
       await LocalCache.instance.saveUser(user);
       status = AuthStatus.authenticated;
     } on ApiException catch (e) {
-      // Network / timeout issues -> try to continue offline with cached
-      // profile instead of forcing a logout.
-      final cachedUser = await LocalCache.instance.readUser();
-      if (cachedUser != null && !e.message.toLowerCase().contains('incorrect')) {
-        currentUser = cachedUser;
-        isOfflineSession = true;
-        status = AuthStatus.authenticated;
-      } else {
+      if (e.isUnauthorized) {
+        // Token is genuinely invalid/expired - force a real login, do not
+        // fall back to the cached profile.
         await AuthStorage.instance.clearToken();
+        await LocalCache.instance.clearUser();
+        currentUser = null;
         status = AuthStatus.unauthenticated;
+      } else {
+        // We're online per the OS, but this specific call still failed
+        // (e.g. server waking up) - fall back to cache rather than
+        // blocking a real user over a transient hiccup.
+        final cachedUser = await LocalCache.instance.readUser();
+        if (cachedUser != null) {
+          currentUser = cachedUser;
+          isOfflineSession = true;
+          status = AuthStatus.authenticated;
+        } else {
+          status = AuthStatus.unauthenticated;
+        }
       }
     } catch (_) {
       status = AuthStatus.unauthenticated;
@@ -71,7 +99,7 @@ class AuthProvider extends ChangeNotifier {
         district: district,
         accessCode: accessCode,
       );
-      status = AuthStatus.unauthenticated; // still needs to log in
+      status = AuthStatus.unauthenticated;
       notifyListeners();
       return user;
     } on ApiException catch (e) {
@@ -96,8 +124,6 @@ class AuthProvider extends ChangeNotifier {
         isOfflineSession = false;
         await LocalCache.instance.saveUser(user);
       } on ApiException {
-        // Logged in but couldn't fetch profile right now - keep going with
-        // whatever we have cached rather than blocking the user out.
         currentUser = await LocalCache.instance.readUser();
         isOfflineSession = true;
       }
@@ -110,6 +136,18 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       rethrow;
     }
+  }
+
+  /// Called whenever any authenticated API call comes back 401 mid-session
+  /// (e.g. token expired while the app was open) - forces the user back
+  /// to the login screen instead of leaving them stuck on broken data.
+  Future<void> forceLogout({String? reason}) async {
+    await AuthStorage.instance.clearToken();
+    await LocalCache.instance.clearUser();
+    currentUser = null;
+    errorMessage = reason;
+    status = AuthStatus.unauthenticated;
+    notifyListeners();
   }
 
   Future<void> logout() async {

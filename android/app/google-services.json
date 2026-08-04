@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "307774380841",
+    "project_id": "webalert-705e6",
+    "storage_bucket": "webalert-705e6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:307774380841:android:46b38e90728b546678b538",
+        "android_client_info": {
+          "package_name": "com.websinaro.webalert"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-YnxZVowgoCzULPQQriYQZ6o-gQdt1kc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

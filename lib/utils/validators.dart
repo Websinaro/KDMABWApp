@@ -24,7 +24,11 @@ class Validators {
 
   static String? password(String? v) {
     if (v == null || v.isEmpty) return 'Enter a password';
-    if (v.length < 6) return 'Password must be at least 6 characters';
+    if (v.length < 8) return 'Password needs at least 8 characters';
+    if (!RegExp(r'[0-9]').hasMatch(v)) return 'Add at least one number';
+    if (!RegExp(r'[A-Z]').hasMatch(v)) return 'Add at least one uppercase letter';
+    if (!RegExp(r'[a-z]').hasMatch(v)) return 'Add at least one lowercase letter';
+    if (!RegExp(r'[^a-zA-Z0-9]').hasMatch(v)) return 'Add at least one symbol (e.g. !@#\$%)';
     return null;
   }
 

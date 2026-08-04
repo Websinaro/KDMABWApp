@@ -100,6 +100,8 @@ class _CitizenWeatherBody extends StatelessWidget {
         locationLabel: provider.activeLocationLabel ?? weather.locationName ?? 'Your Location',
         subLabel: 'Live GPS location',
         usingCache: provider.usingCache,
+        locationDisabled: provider.locationDisabled,
+        cacheMessage: provider.errorMessage,
         onRefresh: () => provider.loadFromDeviceLocation(),
       );
       stateKey = 'data';

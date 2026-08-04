@@ -35,6 +35,17 @@ class CryptoService {
     );
     return base64Encode(combined);
   }
+  
+  Future<List<dynamic>> decryptPayloadList(String token) async {
+    final key = await _getKey();
+    final raw = base64Decode(token);
+    final nonce = raw.sublist(0, 12);
+    final mac = raw.sublist(raw.length - 16);
+    final cipherText = raw.sublist(12, raw.length - 16);
+    final secretBox = SecretBox(cipherText, nonce: nonce, mac: Mac(mac));
+    final decrypted = await _algorithm.decrypt(secretBox, secretKey: key);
+    return jsonDecode(utf8.decode(decrypted)) as List<dynamic>;
+  }
 
   Future<Map<String, dynamic>> decryptPayload(String token) async {
     final key = await _getKey();
