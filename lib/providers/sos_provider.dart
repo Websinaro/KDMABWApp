@@ -15,18 +15,31 @@ class SosProvider extends ChangeNotifier {
   String? errorMessage;
   Timer? _locationTimer;
 
+  /// Checks the server for an SOS the user already has active - e.g. the
+  /// app was closed and reopened mid-emergency. Called once at startup so
+  /// the button never wrongly resets to idle while a real SOS is still live.
+  Future<void> restoreActiveSos() async {
+    try {
+      final alert = await _api.fetchMyActiveSos();
+      if (alert != null && alert.isActive) {
+        activeAlert = alert;
+        status = SosStatus.active;
+        notifyListeners();
+        _startLocationUpdates();
+      }
+    } catch (_) {
+      // Non-fatal - if this check fails (offline, server waking up), just
+      // leave the button in its default state rather than blocking startup.
+    }
+  }
+
   Future<bool> sendSos() async {
     status = SosStatus.sending;
     errorMessage = null;
     notifyListeners();
 
     try {
-      // getFastPosition() prefers the device's cached last-known location
-      // and only waits a bounded few seconds for a fresh GPS fix, instead
-      // of potentially waiting 10-30+ seconds for a cold fix before the
-      // SOS is even sent. If it's a bit off, updateSosLocation() below
-      // corrects it moments later.
-      final position = await LocationService.instance.getFastPosition();
+      final position = await LocationService.instance.getCurrentPosition();
       final alert = await _api.createSos(
         lat: position.latitude,
         lon: position.longitude,
@@ -38,7 +51,6 @@ class SosProvider extends ChangeNotifier {
       notifyListeners();
 
       _startLocationUpdates();
-      _refineInitialLocation(alert.id);
       return true;
     } on ApiException catch (e) {
       errorMessage = e.message;
@@ -50,21 +62,6 @@ class SosProvider extends ChangeNotifier {
       status = SosStatus.error;
       notifyListeners();
       return false;
-    }
-  }
-
-  /// Fired right after a successful SOS send. If the initial position came
-  /// from a cached last-known fix, this grabs one accurate GPS reading in
-  /// the background and pushes it up, so protectors quickly see a precise
-  /// pin without the sender having waited for it before help was alerted.
-  Future<void> _refineInitialLocation(int sosId) async {
-    try {
-      final accurate = await LocationService.instance.getCurrentPosition();
-      final alert = activeAlert;
-      if (alert == null || alert.id != sosId || !alert.isActive) return;
-      await _api.updateSosLocation(sosId: sosId, lat: accurate.latitude, lon: accurate.longitude);
-    } catch (_) {
-      // The periodic 15s updates in _startLocationUpdates will catch up.
     }
   }
 
@@ -101,21 +98,6 @@ class SosProvider extends ChangeNotifier {
       errorMessage = e.message;
       notifyListeners();
       return false;
-    }
-  }
-  
-  Future<void> restoreActiveSos() async {
-    try {
-      final alert = await _api.fetchMyActiveSos();
-      if (alert != null && alert.isActive) {
-        activeAlert = alert;
-        status = SosStatus.active;
-        notifyListeners();
-        _startLocationUpdates();
-      }
-    } catch (_) {
-      // Non-fatal - if this check fails (offline, etc.), just leave the
-      // button in its default state rather than blocking startup.
     }
   }
 

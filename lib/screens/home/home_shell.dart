@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
+import '../../providers/sos_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/page_transitions.dart';
 import '../auth/welcome_screen.dart';
 import '../map/kerala_map_screen.dart';
 import '../profile/profile_screen.dart';
-import '../profile/safety_contacts_screen.dart';
 import 'districts_screen.dart';
 import 'sos_sheet.dart';
 import 'weather_dashboard_screen.dart';
@@ -52,7 +52,44 @@ class _HomeShellState extends State<HomeShell> {
 
         return Scaffold(
           backgroundColor: AppColors.background,
-          body: IndexedStack(index: _index, children: pages),
+          body: Column(
+            children: [
+              // Scoped Consumer, not wrapping the whole Scaffold - only this
+              // thin banner rebuilds when SOS status changes, not the entire
+              // tab content underneath it.
+              Consumer<SosProvider>(
+                builder: (context, sos, _) {
+                  if (sos.status != SosStatus.active) return const SizedBox.shrink();
+                  return SafeArea(
+                    bottom: false,
+                    child: Material(
+                      color: AppColors.alertDarkRed,
+                      child: InkWell(
+                        onTap: () => showSosFlow(context),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          child: Row(
+                            children: [
+                              Icon(Icons.sensors_rounded, color: Colors.white, size: 18),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'SOS ACTIVE - your Safety Circle can see your live location',
+                                  style: TextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                              Icon(Icons.chevron_right_rounded, color: Colors.white, size: 18),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              Expanded(child: IndexedStack(index: _index, children: pages)),
+            ],
+          ),
           floatingActionButton: SosButton(onPressed: () => showSosFlow(context)),
           floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
           bottomNavigationBar: BottomAppBar(
